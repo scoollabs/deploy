@@ -39,8 +39,9 @@ if (len(sys.argv) == 6):
   target_hash = sys.argv[5]
   changed_files = get_changed_files(source_hash, target_hash)
   print(len(changed_files), 'files changed')
-  upload_files(changed_files, host, username, password)
-  print('Done')
+  if (len(changed_files) > 0):
+    upload_files(changed_files, host, username, password)
+    print('Done')
 else:
   print("Usage: python deploy.py <HOST> <USERNAME> <PASSWORD> <SOURCE_HASH> <TARGE_HASH>")
 
