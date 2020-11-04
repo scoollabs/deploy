@@ -16,6 +16,8 @@ Copy the deploy.py to your git repo directory. Please add more to excluded files
 
 ## Usage
 
+Example
+
 ```shell
 > python deploy.py 127.0.0.1 test@localhost.com password ea33526d1909c3d78e333cf77ecf45383aa45640 HEAD
 ```
