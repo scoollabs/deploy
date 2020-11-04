@@ -1,5 +1,7 @@
 # deploy
 
+![](deploy.png)
+
 ## Requirement
 
 This needs python (we use Python 3, and we haven't tested it in Python 2x) and GitPython to be installed.
