@@ -5,33 +5,41 @@ import json
 from pathlib import Path
 import os
 
-def upload_files(files, host, username, password):
+def upload_files(ftp, files):
+  for f in files:
+    upload_file(ftp, f)
+
+def login(host, username, password):
   ftp = FTP(host)
   print('Logging in as', username, '@', host)
   ftp.login(user = username, passwd = password)
-  for f in files:
-    # print('Uploading', f)
-    ftp.cwd('/')
-    p = Path(f)
-    directory = str(p.parent).replace('\\', '/')
-    filename = p.name
-    ftp.cwd(directory)
-    full_path = directory + '/' + filename
-    nlist = ftp.nlst()
-    if os.path.exists(full_path) and filename in nlist:
-      ftp.storbinary('STOR /' + full_path, open(full_path, 'rb'))
-      print('Updating', f, 'OK')
-    elif os.path.exists(full_path) and filename not in nlist:
-      ftp.storbinary('STOR /' + full_path, open(full_path, 'wb'))
-      print('Adding', f, 'OK')
-    elif not os.path.exists(full_path) and filename in nlist:
-      ftp.delete(full_path)
-      print('Removing', f, 'OK')
-    else:
-      print('Skipping', f)
+  return ftp
 
-def file_exists_in_server(filename):
-  pass
+def upload_file(ftp, f):
+  # print('Uploading', f)
+  ftp.cwd('/')
+  p = Path(f)
+  directory = str(p.parent).replace('\\', '/')
+  try:
+    ftp.cwd(directory)
+  except:
+    print('Creating directory', directory)
+    ftp.mkd(directory)
+    ftp.cwd(directory)
+  filename = p.name
+  full_path = directory + '/' + filename
+  nlist = ftp.nlst()
+  if os.path.exists(full_path) and filename in nlist:
+    ftp.storbinary('STOR /' + full_path, open(full_path, 'rb'))
+    print('Updating', f, 'OK')
+  elif os.path.exists(full_path) and filename not in nlist:
+    ftp.storbinary('STOR /' + full_path, open(full_path, 'rb'))
+    print('Adding', f, 'OK')
+  elif not os.path.exists(full_path) and filename in nlist:
+    ftp.delete('/' + full_path)
+    print('Removing', f, 'OK')
+  else:
+    print('Skipping', f)
 
 def get_changed_files(source_hash, target_hash, excluded_files):
   repo = git.Repo('.')
@@ -60,12 +68,16 @@ def get_config():
     config = json.load(f)
   return config
 
-config = get_config()
-changed_files = get_changed_files(config['source_hash'], config['target_hash'], config['excluded_files'])
-print(len(changed_files), 'files changed')
-if (len(changed_files) > 0):
-  upload_files(changed_files, config['host'], config['username'], config['password'])
-  update_config()
-  print('Done')
+def main():
+  config = get_config()
+  changed_files = get_changed_files(config['source_hash'], config['target_hash'], config['excluded_files'])
+  print(len(changed_files), 'files changed')
+  if (len(changed_files) > 0):
+    ftp = login(config['host'], config['username'], config['password'])
+    upload_files(ftp, changed_files)
+    update_config()
+    print('Done')
 
-print()
+  print()
+
+main()
