@@ -1,0 +1,7 @@
+{
+  "host": "ftp_host",
+  "username": "ftp_username",
+  "password": "ftp_password",
+  "target_hash": "HEAD",
+  "source_hash": "source_commit_hash"
+}
