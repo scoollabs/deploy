@@ -16,10 +16,22 @@ Copy the deploy.py to your git repo directory. Please add more to excluded files
 
 ## Usage
 
-Example
+Setup deploy.json config file for your FTP credentials and start commit hash.
 
-```shell
-> python deploy.py 127.0.0.1 test@localhost.com password ea33526d1909c3d78e333cf77ecf45383aa45640 HEAD
+```json
+{
+  "host": "127.0.0.1",
+  "username": "test@localhost.com",
+  "password": "password",
+  "target_hash": "HEAD",
+  "source_hash": "ea33526d1909c3d78e333cf77ecf45383aa45640"
+}
 ```
 
-This will install changes from ea33526d1909c3d78e333cf77ecf45383aa45640 to HEAD to your FTP hosted locally with FTP username test@localhost and password "password".
+Run
+
+```shell
+> python deploy.py
+```
+
+This will upload changes from ea33526d1909c3d78e333cf77ecf45383aa45640 to HEAD to your FTP hosted locally with FTP username test@localhost and password "password".
