@@ -1,5 +1,3 @@
-# deploy
-
 ![](deploy.png)
 
 ## Requirement
