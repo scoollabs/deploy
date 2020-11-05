@@ -3,6 +3,7 @@ from ftplib import FTP
 import sys
 import json
 from pathlib import Path
+import os
 
 def upload_files(files, host, username, password):
   ftp = FTP(host)
@@ -16,10 +17,23 @@ def upload_files(files, host, username, password):
     filename = p.name
     ftp.cwd(directory)
     full_path = directory + '/' + filename
-    ftp.storbinary('STOR /' + full_path, open(full_path, 'rb'))
-    print('Uploading', f, 'OK')
+    nlist = ftp.nlst()
+    if os.path.exists(full_path) and filename in nlist:
+      ftp.storbinary('STOR /' + full_path, open(full_path, 'rb'))
+      print('Updating', f, 'OK')
+    elif os.path.exists(full_path) and filename not in nlist:
+      ftp.storbinary('STOR /' + full_path, open(full_path, 'wb'))
+      print('Adding', f, 'OK')
+    elif not os.path.exists(full_path) and filename in nlist:
+      ftp.delete(full_path)
+      print('Removing', f, 'OK')
+    else:
+      print('Skipping', f)
 
-def get_changed_files(source_hash, target_hash):
+def file_exists_in_server(filename):
+  pass
+
+def get_changed_files(source_hash, target_hash, excluded_files):
   repo = git.Repo('.')
   source_commit = repo.commit(source_hash)
   target_commit = repo.commit(target_hash)
@@ -31,18 +45,6 @@ def get_changed_files(source_hash, target_hash):
       # print(filename)
       changed_files.append(filename)
   return changed_files
-
-excluded_files = [
-  'application/config/production/config.php',
-  'application/config/production/database.php',
-  'application/config/stage/config.php',
-  'application/config/stage/database.php',
-  'application/doc/schema.sql',
-  '.gitignore',
-  '.htaccess',
-  'deploy.py',
-  'README.md',
-]
 
 def update_config():
   repo = git.Repo('.')
@@ -59,7 +61,7 @@ def get_config():
   return config
 
 config = get_config()
-changed_files = get_changed_files(config['source_hash'], config['target_hash'])
+changed_files = get_changed_files(config['source_hash'], config['target_hash'], config['excluded_files'])
 print(len(changed_files), 'files changed')
 if (len(changed_files) > 0):
   upload_files(changed_files, config['host'], config['username'], config['password'])
