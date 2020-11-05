@@ -45,6 +45,7 @@ def get_changed_files(source_hash, target_hash, excluded_files):
   repo = git.Repo('.')
   source_commit = repo.commit(source_hash)
   target_commit = repo.commit(target_hash)
+  print('Checking diff from', source_hash, 'to', target_hash)
   diff = source_commit.diff(target_commit)
   changed_files = []
   for f in diff:
@@ -58,6 +59,7 @@ def update_config():
   repo = git.Repo('.')
   source_hash = repo.head.commit.hexsha
   config = get_config()
+  print('Updading source hash config to', source_hash)
   config['source_hash'] = source_hash
   with open('deploy.json', 'w') as o:
     json.dump(config, o, indent = 2)
