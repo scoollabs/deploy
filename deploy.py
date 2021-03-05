@@ -59,7 +59,7 @@ def update_config():
   repo = git.Repo('.')
   source_hash = repo.head.commit.hexsha
   config = get_config()
-  print('Updading source hash config to', source_hash)
+  print('Updating source hash config to', source_hash)
   config['source_hash'] = source_hash
   with open('deploy.json', 'w') as o:
     json.dump(config, o, indent = 2)
