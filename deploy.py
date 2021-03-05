@@ -5,9 +5,9 @@ import json
 from pathlib import Path
 import os
 
-def upload_files(ftp, files):
+def upload_files(ftp, files, default_remote_directory):
   for f in files:
-    upload_file(ftp, f)
+    upload_file(ftp, f, default_remote_directory)
 
 def login(host, username, password):
   ftp = FTP(host)
@@ -15,28 +15,30 @@ def login(host, username, password):
   ftp.login(user = username, passwd = password)
   return ftp
 
-def upload_file(ftp, f):
+def upload_file(ftp, f, default_remote_directory):
   # print('Uploading', f)
   ftp.cwd('/')
   p = Path(f)
   directory = str(p.parent).replace('\\', '/')
+  remote_directory = default_remote_directory + '/' + directory
   try:
-    ftp.cwd(directory)
+    ftp.cwd(remote_directory)
   except:
-    print('Creating directory', directory)
-    ftp.mkd(directory)
-    ftp.cwd(directory)
+    print('Creating directory', remote_directory)
+    ftp.mkd(remote_directory)
+    ftp.cwd(remote_directory)
   filename = p.name
   full_path = directory + '/' + filename
+  remote_full_path = remote_directory + '/' + filename
   nlist = ftp.nlst()
   if os.path.exists(full_path) and filename in nlist:
-    ftp.storbinary('STOR /' + full_path, open(full_path, 'rb'))
+    ftp.storbinary('STOR /' + remote_full_path, open(full_path, 'rb'))
     print('Updating', f, 'OK')
   elif os.path.exists(full_path) and filename not in nlist:
-    ftp.storbinary('STOR /' + full_path, open(full_path, 'rb'))
+    ftp.storbinary('STOR /' + remote_full_path, open(full_path, 'rb'))
     print('Adding', f, 'OK')
   elif not os.path.exists(full_path) and filename in nlist:
-    ftp.delete('/' + full_path)
+    ftp.delete('/' + remote_full_path)
     print('Removing', f, 'OK')
   else:
     print('Skipping', f)
@@ -76,7 +78,7 @@ def main():
   print(len(changed_files), 'files changed')
   if (len(changed_files) > 0):
     ftp = login(config['host'], config['username'], config['password'])
-    upload_files(ftp, changed_files)
+    upload_files(ftp, changed_files, config['default_remote_directory'])
     update_config()
     print('Done')
 
