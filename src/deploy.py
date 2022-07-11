@@ -57,29 +57,35 @@ def get_changed_files(source_hash, target_hash, excluded_files):
       changed_files.append(filename)
   return changed_files
 
-def update_config():
+def update_config(config_file):
   repo = git.Repo('.')
   source_hash = repo.head.commit.hexsha
-  config = get_config()
+  config = get_config(config_file)
   print('Updating source hash config to', source_hash)
   config['source_hash'] = source_hash
-  with open('deploy.json', 'w') as o:
+  # with open('deploy.json', 'w') as o:
+  with open(config_file, 'w') as o:
     json.dump(config, o, indent = 2)
 
-def get_config():
+def get_config(config_file):
   config = {}
-  with open('deploy.json') as f:
+  # with open('deploy.json') as f:
+  with open(config_file) as f:
     config = json.load(f)
   return config
 
 def main():
-  config = get_config()
+  config_file = 'deploy.json'
+  if (len(sys.argv) == 2):
+    config_file = sys.argv[1]
+    
+  config = get_config(config_file)
   changed_files = get_changed_files(config['source_hash'], config['target_hash'], config['excluded_files'])
   print(len(changed_files), 'files changed')
   if (len(changed_files) > 0):
     ftp = login(config['host'], config['username'], config['password'])
     upload_files(ftp, changed_files, config['default_remote_directory'])
-    update_config()
+    update_config(config_file)
     print('Done')
 
   print()
