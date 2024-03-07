@@ -78,7 +78,7 @@ def main():
   config_file = 'deploy.json'
   if (len(sys.argv) == 2):
     config_file = sys.argv[1]
-    
+  
   config = get_config(config_file)
   changed_files = get_changed_files(config['source_hash'], config['target_hash'], config['excluded_files'])
   print(len(changed_files), 'files changed')
